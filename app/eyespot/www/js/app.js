@@ -20,8 +20,10 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
 
 .controller('AppCtrl', function($scope, $interval, $http, $ionicPopup, $ionicPlatform) {
   $scope.liveImg = '';
+  $scope.beginBtn = true;
 
   $scope.launchCamera = function() {
+    $scope.beginBtn = false;
     $scope.cameraPlus = cordova.plugins.CameraPlus;
     $scope.cameraPlus.startCamera(function() {
       $interval(function() {
@@ -30,7 +32,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
         }, function() {
           console.log("error");
         });
-      }, 100);
+      }, 500);
 
       $interval(function() {
         $scope.cameraPlus.getJpegImage(function(imgData) {
@@ -92,13 +94,12 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
 
                       $http(personConfig).then(function(res) {
                         var name = res.data.name;
-                        $scope.showName = function() {
-                          var namePopup = $ionicPopup.alert({
-                            title: name + ' is in front of you!'
-                         });
 
-                         alertPopup();
-                       };
+                        TTS.speak(name + ' is in front of you!', function() {
+                          console.log('speech success');
+                        }, function(err) {
+                          console.log(err);
+                        })
                       }, function(err) {
                         console.log(err);
                       });
@@ -119,7 +120,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
         }, function() {
           console.log("error");
         });
-      }, 2000);
+      }, 3000);
     }, function() {
       console.log("error");
     });

@@ -28,13 +28,15 @@
         <h1 class="title">EyeSpot</h1>
       </ion-header-bar>
       <ion-content>
-        <center><button class="button" ng-click="launchCamera()">
+        <center><button class="button" ng-click="launchCamera()" ng-show="beginBtn">
           Begin
         </button></center>
 
         <center><div class="stream">
           <img src="{{liveImg}}">
         </div></center>
+
+        <center><button class="button icon ion-mic-a"></button></center>
       </ion-content>
     </ion-pane>
   </body>
