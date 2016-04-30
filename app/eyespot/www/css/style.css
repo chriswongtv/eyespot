@@ -11,3 +11,9 @@ html, body {
 	height: 100%;
 	width: 100%;
 }
+
+.mic {
+	border-radius: 100%;
+	background-color: #e74c3c;
+	color: white;
+}

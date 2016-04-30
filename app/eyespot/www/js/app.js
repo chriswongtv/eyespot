@@ -125,4 +125,12 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
       console.log("error");
     });
   }
+
+  $scope.record = function() {
+    navigator.device.capture.captureAudio(function(e) {
+      var soundPath = e[0].fullPath;
+    }, function(err) {
+      console.log(err);
+    }, { duration: 4 });
+  }
 });
