@@ -18,7 +18,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
   });
 })
 
-.controller('AppCtrl', function($scope, $interval, $http, $ionicPlatform) {
+.controller('AppCtrl', function($scope, $interval, $http, $ionicPopup, $ionicPlatform) {
   $scope.liveImg = '';
 
   $scope.launchCamera = function() {
@@ -92,7 +92,13 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
 
                       $http(personConfig).then(function(res) {
                         var name = res.data.name;
-                        alert(name + ' is in front of you!');
+                        $scope.showName = function() {
+                          var namePopup = $ionicPopup.alert({
+                            title: name + ' is in front of you!'
+                         });
+
+                         alertPopup();
+                       };
                       }, function(err) {
                         console.log(err);
                       });
