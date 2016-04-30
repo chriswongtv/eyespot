@@ -15,19 +15,26 @@
     <!-- ionic/angularjs js -->
     <script src="lib/ionic/js/ionic.bundle.js"></script>
 
+    <script src="lib/ngCordova/dist/ng-cordova.js"></script>
     <!-- cordova script (this will be a 404 during development) -->
     <script src="cordova.js"></script>
 
     <!-- your app's js -->
     <script src="js/app.js"></script>
   </head>
-  <body ng-app="eyespot">
-
+  <body ng-app="eyespot" ng-controller="AppCtrl">
     <ion-pane>
       <ion-header-bar class="bar-stable">
-        <h1 class="title">Ionic Blank Starter</h1>
+        <h1 class="title">EyeSpot</h1>
       </ion-header-bar>
       <ion-content>
+        <center><button class="button" ng-click="launchCamera()">
+          Begin
+        </button></center>
+
+        <center><div class="stream">
+          <img src="{{liveImg}}">
+        </div></center>
       </ion-content>
     </ion-pane>
   </body>
