@@ -18,7 +18,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
   });
 })
 
-.controller('AppCtrl', function($scope, $interval, $http, $ionicPlatform, $cordovaDeviceMotion) {
+.controller('AppCtrl', function($scope, $interval, $http, $ionicPlatform, $cordovaDeviceMotion, $ionicModal) {
   $scope.liveImg = '';
   $scope.beginBtn = true;
   var accOption = { frequency: 500 };
@@ -27,7 +27,29 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
   var z = 0;
   var target = '';
 
+  $ionicModal.fromTemplateUrl('welcome.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function(modal) {
+    $scope.modal = modal;
+  });
+  $scope.openModal = function() {
+    $scope.modal.show();
+  };
+  $scope.closeModal = function() {
+    $scope.modal.hide();
+  };
+  $scope.$on('$destroy', function() {
+    $scope.modal.remove();
+  });
+
+  ionic.Platform.ready(function() {
+    $scope.openModal();
+  });
+
   $scope.launchCamera = function() {
+    $scope.modal.hide();
+    $scope.status = '';
     $scope.beginBtn = false;
     $scope.cameraPlus = cordova.plugins.CameraPlus;
     $scope.cameraPlus.startCamera(function() {
@@ -38,6 +60,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
           console.log(error);
         },
         function(result) {
+          $scope.status = '';
           var dx = Math.abs(result.x - x);
           var dy = Math.abs(result.y - y);
           var dz = Math.abs(result.z - z);
@@ -142,6 +165,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                               if (val3.text.toLowerCase() === 'hacks' && target === 'venue') {
                                 TTS.speak('We are currently at LA Hacks!', function() {
                                   console.log('speech success');
+                                  $scope.status = 'Venue detected!';
                                 }, function(err) {
                                   console.log(err);
                                 })
@@ -149,6 +173,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                               } else if (val3.text.toLowerCase() === 'locker' && target === 'venue') {
                                 TTS.speak('We are currently at Locker Room 2!', function() {
                                   console.log('speech success');
+                                  $scope.status = 'Venue detected!';
                                 }, function(err) {
                                   console.log(err);
                                 })
@@ -156,6 +181,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                               } else if (val3.text.toLowerCase() === 'recyclables' && target === 'garbage') {
                                 TTS.speak('There is a garbage can in front of you!', function() {
                                   console.log('speech success');
+                                  $scope.status = 'Venue detected!';
                                 }, function(err) {
                                   console.log(err);
                                 })
@@ -163,6 +189,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                               } else if (val3.text.toLowerCase() === 'compostables' && target === 'garbage') {
                                 TTS.speak('There is a garbage can in front of you!', function() {
                                   console.log('speech success');
+                                  $scope.status = 'Venue detected!';
                                 }, function(err) {
                                   console.log(err);
                                 })
@@ -178,6 +205,64 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                       console.log(res);
                     }
                   }, function(err) {
+                    var ocrConfig = {
+                        "method": "POST",
+                        "url": "https://api.projectoxford.ai/vision/v1.0/ocr",
+                        "headers": {
+                          "ocp-apim-subscription-key": "81cf1aad8ad340c3b90a48dee5c81ab3",
+                          "content-type": "application/json"
+                        },
+                        "data": { "url": imgLink }
+                      }
+
+                      $http(ocrConfig).then(function(res) {
+                        var text = '';
+                        res.data.regions.forEach(function(val) {
+                          val.lines.forEach(function(val2) {
+                            val2.words.forEach(function(val3) {
+                              text += (val3.text + ' ');
+                              console.log(val3);
+                              console.log(val3.text);
+                              console.log(target);
+                              if (val3.text.toLowerCase() === 'hacks' && target === 'venue') {
+                                TTS.speak('We are currently at LA Hacks!', function() {
+                                  console.log('speech success');
+                                  $scope.status = 'Venue detected!';
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'locker' && target === 'venue') {
+                                TTS.speak('We are currently at Locker Room 2!', function() {
+                                  console.log('speech success');
+                                  $scope.status = 'Venue detected!';
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'recyclables' && target === 'garbage') {
+                                TTS.speak('There is a garbage can in front of you!', function() {
+                                  console.log('speech success');
+                                  $scope.status = 'Venue detected!';
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'compostables' && target === 'garbage') {
+                                TTS.speak('There is a garbage can in front of you!', function() {
+                                  console.log('speech success');
+                                  $scope.status = 'Venue detected!';
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              }
+                            })
+                          })
+                        })
+                      }, function(err) {
+                        console.log(err);
+                      });
                     console.log(err);
                   })
                 }, function(err) {
@@ -199,55 +284,52 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
         });
       }, 500);
   }
-
+      
   $scope.record = function() {
-      $scope.recognizedText = "";
+    $scope.recognizedText = "";
+    var recognition = new SpeechRecognition();
     
-      $scope.record = function() {
-          var recognition = new SpeechRecognition();
-          
-          recognition.onresult = function(event) {
-              if (event.results.length > 0) {
-                  $scope.recognizedText = event.results[0][0].transcript;
-                  console.log($scope.recognizedText);
-                  var input = $scope.recognizedText.toLowerCase();
-                  if (input.indexOf('bathroom') !== -1 || input.indexOf('restroom') !== -1) {
-                    target = 'restroom';
-                    TTS.speak('I will look for a restroom.', function() {
-                      console.log('speech success');
-                    }, function(err) {
-                      console.log(err);
-                    })
-                  }
-                  else if (input.indexOf('rubbish') !== -1 || input.indexOf('trash') !== -1 || input.indexOf('garbage') !== -1 || input.indexOf('can') !== -1) {
-                    target = 'garbage';
-                    TTS.speak('I will look for a garbage can.', function() {
-                      console.log('speech success');
-                    }, function(err) {
-                      console.log(err);
-                    })
-                  }
-                  else if (input.indexOf('where am i') !== -1) {
-                    target = 'venue';
-                    TTS.speak('I will try to find out where we are.', function() {
-                      console.log('speech success');
-                    }, function(err) {
-                      console.log(err);
-                    })
-                  }
-                  else {
-                    TTS.speak('Sorry, I don\'t understand.', function() {
-                      console.log('speech success');
-                    }, function(err) {
-                      console.log(err);
-                    })
-                  }
+    recognition.onresult = function(event) {
+        if (event.results.length > 0) {
+            $scope.recognizedText = event.results[0][0].transcript;
+            console.log($scope.recognizedText);
+            var input = $scope.recognizedText.toLowerCase();
+            if (input.indexOf('bathroom') !== -1 || input.indexOf('restroom') !== -1) {
+              target = 'restroom';
+              TTS.speak('I will look for a restroom.', function() {
+                console.log('speech success');
+              }, function(err) {
+                console.log(err);
+              })
+            }
+            else if (input.indexOf('rubbish') !== -1 || input.indexOf('trash') !== -1 || input.indexOf('garbage') !== -1 || input.indexOf('can') !== -1) {
+              target = 'garbage';
+              TTS.speak('I will look for a garbage can.', function() {
+                console.log('speech success');
+              }, function(err) {
+                console.log(err);
+              })
+            }
+            else if (input.indexOf('where am i') !== -1) {
+              target = 'venue';
+              TTS.speak('I will try to find out where we are.', function() {
+                console.log('speech success');
+              }, function(err) {
+                console.log(err);
+              })
+            }
+            else {
+              TTS.speak('Sorry, I don\'t understand.', function() {
+                console.log('speech success');
+              }, function(err) {
+                console.log(err);
+              })
+            }
 
-                  $scope.$apply();
-              }
-          };
-          
-          recognition.start();
-      };
-  }
+            $scope.$apply();
+        }
+    };
+    
+    recognition.start();
+  };
 });

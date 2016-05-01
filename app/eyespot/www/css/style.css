@@ -5,6 +5,8 @@ html, body {
 .stream {
 	height: 75%;
 	width: 75%;
+	margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 .stream img {
@@ -16,4 +18,35 @@ html, body {
 	border-radius: 100%;
 	background-color: #e74c3c;
 	color: white;
+}
+
+.begin-btn {
+	margin-top: 10px;
+}
+
+.modal-content {
+	background-color: #2ecc71 !important;
+}
+
+.logo {
+	margin-top: 150px;
+	width: 200px;
+	margin-bottom: 100px;
+}
+
+.scroll-content {
+	background-color: #f1c40f;
+}
+
+.bar-stable {
+	background-color: #3498db !important;
+}
+
+.bar-stable h1 {
+	color: white !important;
+}
+
+.status {
+	color: #9b59b6;
+	margin: 10px;
 }
