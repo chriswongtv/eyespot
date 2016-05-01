@@ -5,9 +5,17 @@ import urllib
 from SimpleCV import *
 
 
+
+
 #load images
 img = cv2.imread("signimg.png")
 template = cv2.imread("signtemplate.png")
+
+height, width = img.shape[:2]
+img = cv2.resize(img,(width/3, height/3), interpolation = cv2.INTER_CUBIC)
+
+height, width = template.shape[:2]
+template = cv2.resize(template,(width/3, height/3), interpolation = cv2.INTER_CUBIC)
 
 #find keypoints
 detector = cv2.FeatureDetector_create("SIFT")
@@ -61,10 +69,10 @@ for i in range(min(len(tkp), len(skp))):
 
 i1=Image("signimg.png")
 i=Image("signtemplate.png")
-i.drawSIFTKeyPointMatch(i1,distance=50).show()
 
+i.drawSIFTKeyPointMatch(i1,distance=50, width=1).show()
+cv2.imshow('image',img)
+cv2.imshow('template',template)
+cv2.waitKey()
 
-
-#use png
-#reduce size
 #'deprecated carbon component manager for hosting audio units.
