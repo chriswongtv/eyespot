@@ -127,10 +127,20 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
   }
 
   $scope.record = function() {
-    navigator.device.capture.captureAudio(function(e) {
-      var soundPath = e[0].fullPath;
-    }, function(err) {
-      console.log(err);
-    }, { duration: 4 });
+      $scope.recognizedText = "";
+    
+      $scope.record = function() {
+          var recognition = new SpeechRecognition();
+          
+          recognition.onresult = function(event) {
+              if (event.results.length > 0) {
+                  $scope.recognizedText = event.results[0][0].transcript;
+                  console.log($scope.recognizedText);
+                  $scope.$apply();
+              }
+          };
+          
+          recognition.start();
+      };
   }
 });
