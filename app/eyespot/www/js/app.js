@@ -45,91 +45,148 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
           y = result.y;
           z = result.z;
           if (dx < 0.2 && dy < 0.2 && dz < 0.3) {
-            $scope.cameraPlus.getJpegImage(function(imgData) {
-              var options = {
-                "method": "POST",
-                "url": "https://api.imgur.com/3/image",
-                "headers": {
-                  "Authorization": "Bearer ac1920b5b8ebbe3dfbc45afc1a8fc9e949dd0c3a"
-                },
-                "data": { "image": imgData, "album": "OvQIN", "type": "base64" }
-              };
-
-              $http(options).then(function(res) {
-                var imgLink = res.data.data.link;
-                console.log(imgLink);
-
-                var detectConfig = {
+            $interval(function() {
+              $scope.cameraPlus.getJpegImage(function(imgData) {
+                var imgurOptions = {
                   "method": "POST",
-                  "url": "https://api.projectoxford.ai/face/v1.0/detect",
+                  "url": "https://api.imgur.com/3/image",
                   "headers": {
-                    "Ocp-Apim-Subscription-Key": "90d05fedd28846839d4f6d66c28e091d",
-                    "Content-Type": "application/json"
+                    "Authorization": "Bearer ac1920b5b8ebbe3dfbc45afc1a8fc9e949dd0c3a"
                   },
-                  "data": { "url": imgLink }
+                  "data": { "image": imgData, "album": "OvQIN", "type": "base64" }
                 };
 
-                $http(detectConfig).then(function(res) {
-                  if (res.data !== []) {
-                    res.data.forEach(function(val) {
-                      var faceId = val.faceId;
+                $http(imgurOptions).then(function(res) {
+                  var imgLink = res.data.data.link;
+                  console.log(imgLink);
 
-                      var identifyConfig = {
-                        "method": "POST",
-                        "url": "https://api.projectoxford.ai/face/v1.0/identify",
-                        "headers": {
-                          "content-type": "application/json",
-                          "ocp-apim-subscription-key": "90d05fedd28846839d4f6d66c28e091d"
-                        },
-                        "data": { 
-                          "personGroupId": "eyespot",
-                          "faceIds":[ faceId ],
-                          "maxNumOfCandidatesReturned": 1
-                        }
-                      };
+                  var detectConfig = {
+                    "method": "POST",
+                    "url": "https://api.projectoxford.ai/face/v1.0/detect",
+                    "headers": {
+                      "Ocp-Apim-Subscription-Key": "90d05fedd28846839d4f6d66c28e091d",
+                      "Content-Type": "application/json"
+                    },
+                    "data": { "url": imgLink }
+                  };
 
-                      $http(identifyConfig).then(function(res) {
-                        console.log(res);
+                  $http(detectConfig).then(function(res) {
+                    if (res.data !== []) {
+                      res.data.forEach(function(val) {
+                        var faceId = val.faceId;
 
-                        if (res.data[0].candidates !== []) {
-                          var personId = res.data[0].candidates[0].personId;
+                        var identifyConfig = {
+                          "method": "POST",
+                          "url": "https://api.projectoxford.ai/face/v1.0/identify",
+                          "headers": {
+                            "content-type": "application/json",
+                            "ocp-apim-subscription-key": "90d05fedd28846839d4f6d66c28e091d"
+                          },
+                          "data": { 
+                            "personGroupId": "eyespot",
+                            "faceIds":[ faceId ],
+                            "maxNumOfCandidatesReturned": 1
+                          }
+                        };
 
-                          var personConfig = {
-                            "method": "GET",
-                            "url": "https://api.projectoxford.ai/face/v1.0/persongroups/eyespot/persons/" + personId,
-                            "headers": {
-                              "ocp-apim-subscription-key": "90d05fedd28846839d4f6d66c28e091d"
-                            }
-                          };
+                        $http(identifyConfig).then(function(res) {
+                          console.log(res);
 
-                          $http(personConfig).then(function(res) {
-                            var name = res.data.name;
+                          if (res.data[0].candidates !== []) {
+                            var personId = res.data[0].candidates[0].personId;
 
-                            TTS.speak(name + ' is in front of you!', function() {
-                              console.log('speech success');
+                            var personConfig = {
+                              "method": "GET",
+                              "url": "https://api.projectoxford.ai/face/v1.0/persongroups/eyespot/persons/" + personId,
+                              "headers": {
+                                "ocp-apim-subscription-key": "90d05fedd28846839d4f6d66c28e091d"
+                              }
+                            };
+
+                            $http(personConfig).then(function(res) {
+                              var name = res.data.name;
+
+                              TTS.speak(name + ' is in front of you!', function() {
+                                console.log('speech success');
+                              }, function(err) {
+                                console.log(err);
+                              })
                             }, function(err) {
                               console.log(err);
+                            });
+                          }
+                        }, function(err) {
+                          console.log(err);
+                        });
+                      });
+
+                      var ocrConfig = {
+                        "method": "POST",
+                        "url": "https://api.projectoxford.ai/vision/v1.0/ocr",
+                        "headers": {
+                          "ocp-apim-subscription-key": "81cf1aad8ad340c3b90a48dee5c81ab3",
+                          "content-type": "application/json"
+                        },
+                        "data": { "url": imgLink }
+                      }
+
+                      $http(ocrConfig).then(function(res) {
+                        var text = '';
+                        res.data.regions.forEach(function(val) {
+                          val.lines.forEach(function(val2) {
+                            val2.words.forEach(function(val3) {
+                              text += (val3.text + ' ');
+                              console.log(val3);
+                              console.log(val3.text);
+                              console.log(target);
+                              if (val3.text.toLowerCase() === 'hacks' && target === 'venue') {
+                                TTS.speak('We are currently at LA Hacks!', function() {
+                                  console.log('speech success');
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'locker' && target === 'venue') {
+                                TTS.speak('We are currently at Locker Room 2!', function() {
+                                  console.log('speech success');
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'recyclables' && target === 'garbage') {
+                                TTS.speak('There is a garbage can in front of you!', function() {
+                                  console.log('speech success');
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              } else if (val3.text.toLowerCase() === 'compostables' && target === 'garbage') {
+                                TTS.speak('There is a garbage can in front of you!', function() {
+                                  console.log('speech success');
+                                }, function(err) {
+                                  console.log(err);
+                                })
+                                target = '';
+                              }
                             })
-                          }, function(err) {
-                            console.log(err);
-                          });
-                        }
+                          })
+                        })
                       }, function(err) {
                         console.log(err);
                       });
-                    });
-                  } else {
-                    console.log(res);
-                  }
+                    } else {
+                      console.log(res);
+                    }
+                  }, function(err) {
+                    console.log(err);
+                  })
                 }, function(err) {
                   console.log(err);
-                })
-              }, function(err) {
-                console.log(err);
+                });
+              }, function() {
+                console.log("error");
               });
-            }, function() {
-              console.log("error");
-            });
+            }, 1000)
           }
         });
       });
@@ -172,7 +229,7 @@ angular.module('eyespot', ['ionic', 'ngCordova'])
                   }
                   else if (input.indexOf('where am i') !== -1) {
                     target = 'venue';
-                    TTS.speak('I will try to find out where are we.', function() {
+                    TTS.speak('I will try to find out where we are.', function() {
                       console.log('speech success');
                     }, function(err) {
                       console.log(err);
